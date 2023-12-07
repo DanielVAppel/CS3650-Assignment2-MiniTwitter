@@ -18,10 +18,12 @@ import javax.swing.tree.DefaultTreeModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 
 //Singleton class using the Singleton pattern
 public class AdminControl implements TreeSelectionListener {
@@ -178,6 +180,25 @@ public class AdminControl implements TreeSelectionListener {
 		tree.setBounds(10, 11, 196, 279);
 		mainFrame.getContentPane().add(tree);
 		
+		JButton findLastUpdatedBtn = new JButton("Find Last Updated User");
+		findLastUpdatedBtn.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+		        findLastUpdatedUser();
+		    }
+		});
+		findLastUpdatedBtn.setBounds(365, 114, 233, 23);
+		mainFrame.getContentPane().add(findLastUpdatedBtn);
+		
+		
+		JButton verifyIDsBtn = new JButton("Verify IDs");
+		verifyIDsBtn.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent e) {
+		        verifyIDs();
+		    }
+		});
+		verifyIDsBtn.setBounds(495, 79, 103, 23);
+		mainFrame.getContentPane().add(verifyIDsBtn);
+		
 		JButton openUserViewBtn = new JButton("Open User View");
 		openUserViewBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -319,5 +340,111 @@ public class AdminControl implements TreeSelectionListener {
 
 	public void setPositiveWords(List<String> positiveWordsList) {
 		this.positiveWordsList = positiveWordsList;
+	}
+	
+	public void findLastUpdatedUser() {
+	    // Implement logic to find the last updated user
+	    // Display the result using a dialog or console output
+		//User lastUpdatedUser = root.findLastUpdatedUser();
+	    User lastUpdatedUser = findLastUpdatedUserRecursive(root);
+		if (lastUpdatedUser != null) {
+            JOptionPane.showMessageDialog(mainFrame, "Last Updated User: " + lastUpdatedUser.getID(), "Last Updated User", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(mainFrame, "No users have been updated yet.", "Last Updated User", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+	private User findLastUpdatedUserRecursive(UserGroupProfile group) {
+		 User lastUpdatedUser = null;
+		    long lastUpdateTime = 0;
+
+		    // Check all users in this group
+		    for (User user : group.getUserList()) {
+		        if (user.getLastUpdateTime() > lastUpdateTime) {
+		            lastUpdatedUser = user;
+		            lastUpdateTime = user.getLastUpdateTime();
+		        }
+		    }
+
+		    // Recursively check all subgroups
+		    for (UserGroupProfile subgroup : group.getGroup()) {
+		        User subgroupLastUpdatedUser = findLastUpdatedUserRecursive(subgroup);
+		        if (subgroupLastUpdatedUser != null && subgroupLastUpdatedUser.getLastUpdateTime() > lastUpdateTime) {
+		            lastUpdatedUser = subgroupLastUpdatedUser;
+		            lastUpdateTime = subgroupLastUpdatedUser.getLastUpdateTime();
+		        }
+		    }
+
+		    return lastUpdatedUser;
+		}
+	
+	private void verifyIDs() {
+	    // Implement ID verification logic here
+	    // Display the result using a dialog or console output
+	    HashSet<String> idSet = new HashSet<>();
+		boolean areIDsValid = root.verifyAllIDs(idSet);
+        if (areIDsValid) {
+            JOptionPane.showMessageDialog(mainFrame, "All IDs are unique and valid.", "ID Verification", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(mainFrame, "Some IDs are not unique or valid.", "ID Verification", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+	public boolean validateIDs() {
+	    HashSet<String> idSet = new HashSet<>();
+	    return validateIDsRecursive(root, idSet);
+
+	}
+	public boolean validateAllIDs() {
+	    HashSet<String> idSet = new HashSet<>();
+	    return root.verifyAllIDs(idSet);
+	}
+	public User getLastUpdatedUser() {
+	    User lastUpdatedUser = null;
+	    long lastUpdateTime = 0;
+
+	    for (User user : getAllUsers()) {
+	        if (user.getLastUpdateTime() > lastUpdateTime) {
+	            lastUpdatedUser = user;
+	            lastUpdateTime = user.getLastUpdateTime();
+	        }
+	    }
+
+	    return lastUpdatedUser;
+	}
+
+	private boolean validateIDsRecursive(UserGroupProfile group, HashSet<String> idSet) {
+	    // Check and add the group ID
+	    if (idSet.contains(group.getID()) || group.getID().contains(" ")) {
+	        return false;
+	    }
+	    idSet.add(group.getID());
+	 // Check all users in this group
+	    for (User user : group.getUserList()) {
+	        if (idSet.contains(user.getID()) || user.getID().contains(" ")) {
+	            return false;
+	        }
+	        idSet.add(user.getID());
+	    }
+
+	    // Recursively check all subgroups
+	    for (UserGroupProfile subgroup : group.getGroup()) {
+	        if (!validateIDsRecursive(subgroup, idSet)) {
+	            return false;
+	        }
+	    }
+
+	    return true;
+	}
+	public List<User> getAllUsers() {
+	    List<User> allUsers = new ArrayList<>();
+	    collectAllUsersRecursive(root, allUsers);
+	    return allUsers;
+	}
+
+	private void collectAllUsersRecursive(UserGroupProfile group, List<User> allUsers) {
+	    allUsers.addAll(group.getUserList()); // Add all users in this group
+
+	    for (UserGroupProfile subgroup : group.getGroup()) { // Recursively add users from all subgroups
+	        collectAllUsersRecursive(subgroup, allUsers);
+	    }
 	}
 }

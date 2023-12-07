@@ -10,11 +10,17 @@ public class User extends NotificationSubject  implements SysEntry, UpdateObserv
 	private String userID;
 	private String parentID;
 	private int messageCounter = 0;
-	
+	private long lastUpdateTime;
+    private long creationTime; // Add this line
+
+
 	
 	//creates a constructor that takes in the user's name
 	public User(String name) {
 		userID = name;
+	    setCreationTime(System.currentTimeMillis());
+	    this.creationTime = System.currentTimeMillis();
+	    this.lastUpdateTime = System.currentTimeMillis();
 	}//end constructor
 	
 	
@@ -27,7 +33,9 @@ public class User extends NotificationSubject  implements SysEntry, UpdateObserv
 	public void updateFeed(String tweet) {
 		feed.add(this.getID() + ": " + tweet);
 		messageCounter = getMessageCounter() + 1;
-        this.notifyFollowers(followers, tweet, this.getID());
+	    this.lastUpdateTime = System.currentTimeMillis();//I think this goes here.
+	    setLastUpdateTime(System.currentTimeMillis());
+		this.notifyFollowers(followers, tweet, this.getID());
 		// Use notifyFollowers from the NotificationSubject parent class		this.notifyFollowers(followers, tweet, this.getID());
 	}//end updateFeed
 	
@@ -152,5 +160,33 @@ public class User extends NotificationSubject  implements SysEntry, UpdateObserv
 	public int getMessageCounter() {
 		return messageCounter;
 	}
-	
+
+
+
+	public long getCreationTime() {
+		return creationTime;
+	}
+
+
+
+	public void setCreationTime(long creationTime) {
+		this.creationTime = creationTime;
+	}
+
+
+
+	public long getLastUpdateTime() {
+		return lastUpdateTime;
+	}
+
+
+
+	public void setLastUpdateTime(long lastUpdateTime) {
+		this.lastUpdateTime = lastUpdateTime;
+	}
+	public void postMessage(String message) {
+	    this.lastUpdateTime = System.currentTimeMillis();
+	    // Notify followers to update their lastUpdateTime
+	}
+
 }

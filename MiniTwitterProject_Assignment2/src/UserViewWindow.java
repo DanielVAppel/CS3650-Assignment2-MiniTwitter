@@ -57,11 +57,20 @@ public class UserViewWindow {
 	 */
 	public void initialize(User u1, UserGroupProfile  root) {
 		frame = new JFrame(u1.getID());
-		frame.setBounds(100, 100, 500, 513);
+		frame.setBounds(100, 100, 500, 550);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		
-		
+		// Displaying the creation time
+	    JLabel creationTimeLabel = new JLabel("Creation Time: " + u1.getCreationTime());
+	    creationTimeLabel.setBounds(10, 470, 200, 14); // Adjust position as needed
+	    frame.getContentPane().add(creationTimeLabel);
+
+	    // Displaying the last update time
+	    JLabel lastUpdateTimeLabel = new JLabel("Last Update Time: " + u1.getLastUpdateTime());
+	    lastUpdateTimeLabel.setBounds(220, 470, 200, 14); // Adjust position as needed
+	    frame.getContentPane().add(lastUpdateTimeLabel);
+	    
 		//button used to add a new user to follow
 		JButton followBtn = new JButton("Follow User");
 		followBtn.addActionListener(new ActionListener() {

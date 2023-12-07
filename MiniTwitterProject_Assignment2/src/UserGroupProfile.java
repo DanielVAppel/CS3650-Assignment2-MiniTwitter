@@ -1,9 +1,11 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 //User Group class implementing System Entry
 
 public class UserGroupProfile implements SysEntry {
 	
+    private long creationTime;
 	private List<SysEntry> entryList  = new ArrayList<SysEntry>();
 	private List<User> groupUsers = new ArrayList<User>();
 	private List<UserGroupProfile > subGroups = new ArrayList<UserGroupProfile >();
@@ -13,6 +15,8 @@ public class UserGroupProfile implements SysEntry {
 	//UserGroup object is created
 	public UserGroupProfile (String name) {
 		groupID = name;
+		this.creationTime = System.currentTimeMillis();
+	    setCreationTime(System.currentTimeMillis());
 	}//end UserGroup
 	
 	
@@ -94,4 +98,77 @@ public class UserGroupProfile implements SysEntry {
 		return total;
 	}//end accept
 
+
+	public long getCreationTime() {
+		return creationTime;
+	}
+
+
+	public void setCreationTime(long creationTime) {
+		this.creationTime = creationTime;
+	}
+	
+	public User findLastUpdatedUser() {
+	    User lastUpdatedUser = null;
+	    long maxLastUpdateTime = Long.MIN_VALUE;
+
+	    for (User user : groupUsers) {
+	        if (user.getLastUpdateTime() > maxLastUpdateTime) {
+	            maxLastUpdateTime = user.getLastUpdateTime();
+	            lastUpdatedUser = user;
+	        }
+	    }
+
+	    // Now lastUpdatedUser contains the user with the latest update time in the group
+	    return lastUpdatedUser;
+	}
+	
+	//verify ID logic
+	public boolean  verifyAllIDs(HashSet<String> idSet) {
+		// Check the group's ID
+	    if (idSet.contains(this.groupID) || this.groupID.contains(" ")) {
+	        return false;
+	    }
+	    idSet.add(this.groupID);
+
+	    // Check all users in this group
+	    for (User user : this.groupUsers) {
+	        if (idSet.contains(user.getID()) || user.getID().contains(" ")) {
+	            return false;
+	        }
+	        idSet.add(user.getID());
+	    }
+
+	    // Recursively check all subgroups
+	    for (UserGroupProfile subgroup : this.subGroups) {
+	        if (!subgroup.verifyAllIDs(idSet)) {
+	            return false;
+	        }
+	    }
+
+	    return true;
+	}
+
+	// A helper method to verify the ID of a single user
+	private boolean verifyID(User user) {
+	    // Display the result using a dialog or console output
+	   /* if (isValidID(user.getID())) {
+	        System.out.println("ID Verification Passed for User: " + user.getID());
+	    } else {
+	        System.out.println("ID Verification Failed for User: " + user.getID());
+	    }*/
+	    return isValidID(user.getID());
+
+	}
+
+	// A simple ID validation logic: Check if the ID is greater than zero
+	private boolean isValidID(String userID) {
+	    try {
+	        int idNumber = Integer.parseInt(userID);
+	        return idNumber > 0;
+	    } catch (NumberFormatException e) {
+	        // Handle the case where the ID is not a valid integer
+	        return false;
+	    }
+	}
 }
